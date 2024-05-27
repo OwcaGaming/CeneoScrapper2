@@ -1,11 +1,13 @@
 from app import app
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, send_file
 from bs4 import BeautifulSoup
+import numpy as np
+import pandas as pd
 import requests
 from app import utils
 import os
 import json
-import numpy as pd
+import io
 
 @app.route('/')
 @app.route('/index')
@@ -22,6 +24,7 @@ def extract():
             page_dom = BeautifulSoup(response.text, "html.parser")
             opinions_count = utils.extract(page_dom, "a.product-review__link > span")
             if opinions_count:
+                product_name = utils.extract(page_dom, "h1")
                 url = f"https://www.ceneo.pl/{product_id}/opinie-1"
                 all_opinions = []
                 while(url):
@@ -50,15 +53,16 @@ def extract():
                     stats = {
                         "product_id" : product_id,
                         "opinions_count" : opinions.shape[0],
-                        "pros_count" : opinions.pros.apply(lambda p: 1 if p else 0).sum(),
-                        "cons_count" : opinions.cons.apply(lambda c: 1 if c else 0).sum(),
+                        "pros_count" : int(opinions.pros.apply(lambda p: 1 if p else 0).sum()),
+                        "cons_count" : int(opinions.cons.apply(lambda c: 1 if c else 0).sum()),
                         "average_rating" : opinions_rating.mean(),
-                        "rating_distribution" : opinions_rating.value_counts().reindex(np.arange(0,5.5,0.5), fill_value=0),
-                        "recommendations_distribution" : opinions.recommendation.value_counts().reindex(["Polecam", "Nie polecam", "Brak rekomendacji"])
+                        "rating_distribution" : opinions_rating.value_counts().reindex(np.arange(0,5.5,0.5), fill_value=0).to_dict(),
+                        "recommendations_distribution" : opinions.recommendation.value_counts().reindex(["Polecam", "Nie polecam", "Brak rekomendacji"]).to_dict(),
+                        "produt_name" : product_name
 
 
                     }
-                    with open(f"app/data/opinions/{product_id}.json", "w", encoding="UTF-8") as jf:
+                    with open(f"app/data/stats/{product_id}.json", "w", encoding="UTF-8") as jf:
                         json.dump(stats, jf, indent=4, ensure_ascii=False)
                 return redirect(url_for('product', product_id=product_id))
             return render_template("extract.html.jinja", error="Dla produktu o podanym id nie ma żadnych opinii")
@@ -72,8 +76,13 @@ def author():
 
 @app.route('/products')
 def products():
-    products = [filename.split(".")[0] for filename in os.listdir("app/data/opinions")]
-    return render_template("products.html.jinja")
+    products_list = [filename.split(".")[0] for filename in os.listdir("app/data/opinions")]
+    products = []
+    for product_id in products_list:
+        
+        with open(f"app/data/stats/{product_id}.json", "r", encoding="UTF-8") as jf:
+            products.append(f"app/data/stats/{product_id}.json")
+    return render_template("products.html.jinja", products = products)
 
 @app.route('/product/<product_id>')
 def product(product_id):
@@ -82,7 +91,20 @@ def product(product_id):
 
 
 
-@app.route('/hello')
-@app.route('/hello/<name>')
-def hello(name="World"):
-    return f"Hello, {name}!"
+@app.route('/product/download_json/<product_id>')
+def download_json(product_id):
+    return send_file(f"app/data/opinions/{product_id}.json", "text/json", as_attachment=True)
+
+
+
+@app.route('/product/download_csv/<product_id>')
+def download_csv(product_id):
+    opinions = pd.read_json(f"app/data/opinions/{product_id}.json")
+    buffer = io.BytesIO(opinions.to_csv(sep=";", decimal=",", index=False).encode())
+    opinions.to_csv()
+    return send_file(buffer, "text/csv", as_attachment=True, download_name=f"{product_id}.csv")
+    
+@app.route('/product/download_xlsx/<product_id>')
+def download_xlsx(product_id):
+    pass
+

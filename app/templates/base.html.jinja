@@ -10,8 +10,9 @@
         <title>Ceneo.pl Scrapper</title>
     </head>
     <body class="customAllign">
-        <h1 class="display-1">Ceneo Scraper</h1>
         <header class="container text-center">
+        <h1 class="display-1">Ceneo Scraper</h1>
+        </header>
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark container">
                 <div class="container-fluid">
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -33,19 +34,19 @@
                     </div>
                 </div>
             </nav>
-        </header>
-        <div id="page-container">
-                <section>
+        <section class="container">
+            <div class="row">
+                <div class="col">
                     <h2 class="text-center mt-3 mb-3">
-                    {% block title %}
-                        
-                    {% endblock %}
-
+                        {% block title %}
+                        {% endblock %}
                     </h2>
                     {% block content %}
-                        <p>To jest plik bazowy</p>
+                        <p>To jest plik bazowy.</p>
                     {% endblock %}
-                </section>
+                </div>
+            </div>  
+        </section>
         <footer class="container bg-dark text-light fixed-bottom text-center">
             <p>Adam Ronkiewicz, Uniwersytet Ekonomiczny w Krakowie</p>
         </footer>

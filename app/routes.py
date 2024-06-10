@@ -76,17 +76,30 @@ def author():
 
 @app.route('/products')
 def products():
-    products_list = [filename.split(".")[0] for filename in os.listdir("app/data/opinions")]
+    products_list = [filename.split(".")[0] for filename in os.listdir("app/data/stats")]
     products = []
     for product_id in products_list:
         
         with open(f"app/data/stats/{product_id}.json", "r", encoding="UTF-8") as jf:
-            products.append(f"app/data/stats/{product_id}.json")
-    return render_template("products.html.jinja", products = products)
+            stats = json.load(jf)
+            products.append(stats)
+    return render_template("products.html.jinja", products = products, product_id = product_id,)
 
 @app.route('/product/<product_id>')
 def product(product_id):
-    return render_template("product.html.jinja", product_id=product_id)
+     product_file_path = os.path.join('app/products', f'{product_id}.json')
+     product_data = None
+     try:
+        with open(product_file_path, 'r', encoding='utf-8') as file:
+            product_data = json.load(file)
+     except FileNotFoundError:
+        f"Product with ID {product_id} not found"
+     except json.JSONDecodeError:
+        f"Error decoding JSON for product with ID {product_id}"
+     if product_data is None:
+        f"Unexpected error for product with ID {product_id}"
+     return render_template("product.html.jinja", product=product_data,product_id=product_id)
+
 
 
 

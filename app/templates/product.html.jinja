@@ -1,4 +1,15 @@
 {% extends "base.html.jinja"%}
 {% block content %}
-    <p>To jest strona poświęcona produktowi {{product_id}}</p>
-{% endblock %}
+<h2 class="text-center mt-4 mb-1">To jest strona produktu {{product_id}}</h2>
+
+<div>
+    <h4 class="mt-4 mb-1">Statystyki produktu:</h4>
+    <ul>
+        <li><strong>Liczba opinii:</strong> {{opinions_count}}</li>
+        <li><strong>Liczba zalet:</strong> {{pros_count}}</li>
+        <li><strong>Liczba wad:</strong> {{cons_count}}</li>
+        <li><strong>Średnia ocena:</strong> {{average_stars}}</li>
+    </ul>
+</div>
+
+    {% endblock %}

@@ -1,5 +1,9 @@
 {% extends "base.html.jinja"%}
 {% block title %}Lista produktów{%endblock%}
 {% block content %}
-    {{ products }}
+    <ol>
+    {% for product in products %}
+        <a href="{{ url_for('product', product_id=product_id) }}" class="fs-5 text-body"><li>{{ product_id }}</li></a>
+    {% endfor %}
+    </ol>
 {% endblock %}
